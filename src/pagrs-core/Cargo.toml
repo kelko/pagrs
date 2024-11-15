@@ -1,0 +1,18 @@
+[package]
+name = "pagrs-core"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+embassy-executor = { workspace = true }
+embassy-time = {workspace = true }
+embedded-graphics-core =  {workspace = true }
+embedded-graphics =  {workspace = true }
+display-interface =  {workspace = true }
+embedded-layout =  {workspace = true }
+heapless = {workspace = true}
+
+ssd1306 =  {workspace = true, features = ["async", "embedded-graphics-core"] }

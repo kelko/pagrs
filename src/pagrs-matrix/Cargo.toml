@@ -1,0 +1,18 @@
+[package]
+name = "pagrs-matrix"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+pagrs-core = { path = "../pagrs-core" }
+display-interface =  {workspace = true }
+embedded-graphics-core =  {workspace = true }
+embedded-graphics =  {workspace = true }
+embassy-executor = {workspace = true}
+heapless = {workspace = true}
+
+static_cell = "2.1.0"
+rand = { version = "0.8.5", features = ["small_rng"], default-features = false }
