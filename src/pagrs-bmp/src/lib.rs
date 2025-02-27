@@ -11,18 +11,21 @@ use embedded_layout::align::{horizontal, vertical, Align};
 use tinybmp::Bmp;
 use pagrs_core::Page;
 
+#[derive(Debug, PartialEq)]
 pub enum HorizontalAlignment {
     Left,
     Center,
     Right
 }
 
+#[derive(Debug, PartialEq)]
 pub enum VerticalAlignment {
     Top,
     Center,
     Bottom
 }
 
+#[derive(Debug)]
 pub struct StaticImage<'a, C> {
     bmp: Bmp<'a, C>,
     horizontal_alignment: HorizontalAlignment,

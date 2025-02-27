@@ -8,6 +8,7 @@ use embedded_graphics_core::pixelcolor::BinaryColor;
 use heapless::String;
 use pagrs_core::Page;
 
+#[derive(Debug)]
 pub struct DynamicText<'a, F, const LENGTH: usize = 64, const FRAMES_PER_SECOND: u8 = 24>
 where F: Fn() -> String<LENGTH> {
     query_text: F,

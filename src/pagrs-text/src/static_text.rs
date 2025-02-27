@@ -7,6 +7,7 @@ use embedded_graphics_core::geometry::Point;
 use embedded_graphics_core::pixelcolor::BinaryColor;
 use pagrs_core::Page;
 
+#[derive(Debug)]
 pub struct StaticText<'a> {
     text: Text<'a, MonoTextStyle<'a, BinaryColor>>,
 }

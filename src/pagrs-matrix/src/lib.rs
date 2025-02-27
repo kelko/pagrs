@@ -1,6 +1,6 @@
 #![no_std]
 
-use core::cmp::{min, PartialEq};
+use core::cmp::PartialEq;
 use display_interface::DisplayError;
 use embedded_graphics_core::draw_target::DrawTarget;
 use embedded_graphics_core::geometry::{Point, Size};
@@ -12,18 +12,19 @@ use static_cell::StaticCell;
 use pagrs_core::Page;
 
 pub const PIXEL_PER_GLYPH_HEIGHT: usize = 9;
-pub const PIXEL_PER_GLYPH_WIDTH: usize = 6;
+pub const PIXEL_PER_GLYPH_WIDTH: usize = 8;
+const WORKER_COUNT: usize = 16;
 
 static RANDOM: StaticCell<SmallRng> = StaticCell::new();
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Mode {
     Adding(usize),
     Removing(usize),
     Done,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 struct Worker {
     column: usize,
     row: usize,
@@ -51,21 +52,22 @@ impl Worker {
     }
 }
 
-pub struct DigitalRain<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize = 16> {
+#[derive(Debug)]
+pub struct DigitalRain<const COLUMNS: usize, const ROWS: usize> {
     columns: [[u8; ROWS]; COLUMNS],
-    workers: [Worker; WORKERS],
+    workers: [Worker; WORKER_COUNT],
     random: &'static mut SmallRng,
     frame_counter: usize,
     columns_with_workers: u64
 }
 
-impl<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize> DigitalRain<COLUMNS, ROWS, WORKERS> {
+impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
     pub fn new(seed: u64) -> Self {
         let random = RANDOM.init(SmallRng::seed_from_u64(seed));
 
         DigitalRain {
             columns: [[0; ROWS]; COLUMNS],
-            workers: [Worker::empty(); WORKERS],
+            workers: [Worker::empty(); WORKER_COUNT],
             random,
             frame_counter: 0,
             columns_with_workers: 0
@@ -88,16 +90,15 @@ impl<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize> DigitalRain<
     }
 
     fn update_state(&mut self, frame_rate: usize) {
-        let worker_maximum = min(COLUMNS, WORKERS);
-        let worker_count = self.random.gen_range(2..worker_maximum/2);
+        let worker_count = self.random.random_range(2..WORKER_COUNT/2);
 
         for _ in 0..worker_count {
-            let index = self.random.gen_range(0..worker_maximum);
+            let index = self.random.random_range(0..WORKER_COUNT);
             let worker = &mut self.workers[index];
 
             match worker.mode {
                 Mode::Adding(index) => {
-                    let glyph = self.random.gen_range(1..30);
+                    let glyph = self.random.random_range(1..27);
                     self.columns[worker.column][worker.row + index] = glyph;
 
                     if index == worker.length - 1 {
@@ -119,7 +120,7 @@ impl<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize> DigitalRain<
                 }
                 Mode::Done => {
                     let column = loop {
-                        let candidate = self.random.gen_range(0..COLUMNS);
+                        let candidate = self.random.random_range(0..COLUMNS);
                         let bit_mask = 1_u64 << candidate;
                         if self.columns_with_workers & bit_mask == bit_mask {
                             continue;
@@ -128,9 +129,9 @@ impl<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize> DigitalRain<
                         break candidate;
                     };
 
-                    let row = self.random.gen_range(0..(ROWS - 3));
+                    let row = self.random.random_range(0..(ROWS - 3));
                     let max_length = ROWS - row;
-                    let length = self.random.gen_range(5..ROWS).clamp(3, max_length);
+                    let length = self.random.random_range(5..ROWS).clamp(3, max_length);
 
                     self.columns_with_workers |= 1_u64 << column;
                     *worker = Worker::new(column, row, length);
@@ -157,88 +158,41 @@ impl<const COLUMNS: usize, const ROWS: usize, const WORKERS: usize> DigitalRain<
     }
 
     fn paint_glyph<D: DrawTarget<Color=BinaryColor, Error=DisplayError>>(&self, display: &mut D, column: usize, row: usize, value: u8) -> Result<(), D::Error> {
-        let value = value % 30;
+        let mut value = value % 27;
 
         // using braille style glyphs: 2 columns of 3 points each. Each point is tested individually
-        // not fully braille compatible because "w" special case is not handled
+        // not braille compatible!
 
-        // dot 1 (top left)
-        match value % 10 {
-            1..=8 => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-            _ => {}
-        };
+        for dot_row in 0..3_usize {
+            let pattern = value % 3;
+            value = value / 3;
 
-        // dot 2 (middle left)
-        match value % 10 {
-            2 | 6..=9 => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT + 3) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-            _ => {}
-        };
+            // left
+            match pattern {
+                0 | 1 => {
+                    let rectangle = Rectangle::new(
+                        Point::new((column * PIXEL_PER_GLYPH_WIDTH) as i32,
+                                   (row * PIXEL_PER_GLYPH_HEIGHT + (3 * dot_row)) as i32),
+                        Size::new(2, 2),
+                    );
+                    display.fill_solid(&rectangle, BinaryColor::On)?;
+                }
+                _ => {}
+            };
 
-        // dot 3 (bottom left)
-        match value {
-            0 => {}
-            _ => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT + 6) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-        };
-
-        // dot 4 (top right)
-        match value % 10 {
-            3 | 4 | 6 | 7 | 9 | 0 => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH + 3) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-            _ => {}
-        };
-
-        // dot 5 (middle right)
-        match value % 10 {
-            0 | 4 | 5 | 7 | 8 => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH + 3) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT + 3) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-            _ => {}
-        };
-
-        // dot 6 (bottom right)
-        match value / 10 {
-            2 => {
-                let rectangle = Rectangle::new(
-                    Point::new((column * PIXEL_PER_GLYPH_WIDTH + 3) as i32,
-                               (row * PIXEL_PER_GLYPH_HEIGHT + 6) as i32),
-                    Size::new(2, 2),
-                );
-                display.fill_solid(&rectangle, BinaryColor::On)?;
-            }
-            _ => {}
-        };
+            // right
+            match pattern {
+                0 | 2 => {
+                    let rectangle = Rectangle::new(
+                        Point::new((column * PIXEL_PER_GLYPH_WIDTH + 3) as i32,
+                                   (row * PIXEL_PER_GLYPH_HEIGHT + (3 * dot_row)) as i32),
+                        Size::new(2, 2),
+                    );
+                    display.fill_solid(&rectangle, BinaryColor::On)?;
+                }
+                _ => {}
+            };
+        }
 
         Ok(())
     }

@@ -11,8 +11,8 @@ pagrs-core = { path = "../pagrs-core" }
 display-interface =  {workspace = true }
 embedded-graphics-core =  {workspace = true }
 embedded-graphics =  {workspace = true }
-embassy-executor = {workspace = true}
-heapless = {workspace = true}
 
-static_cell = "2.1.0"
-rand = { version = "0.8.5", features = ["small_rng"], default-features = false }
+critical-section = "1.2.0"
+portable-atomic = { version = "1.10.0", features = ["critical-section"] }
+static_cell = { version = "2.1.0" }
+rand = { version = "0.9.0", features = ["small_rng"], default-features = false }

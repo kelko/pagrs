@@ -10,6 +10,7 @@ use embedded_graphics_core::pixelcolor::{BinaryColor, Rgb565};
 use tinybmp::Bmp;
 use pagrs_core::Page;
 
+#[derive(Debug)]
 pub struct Screensaver<'a> {
     bmp: Bmp<'a, Rgb565>,
     index: i32,

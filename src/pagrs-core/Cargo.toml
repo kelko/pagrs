@@ -14,5 +14,4 @@ embedded-graphics =  {workspace = true }
 display-interface =  {workspace = true }
 embedded-layout =  {workspace = true }
 heapless = {workspace = true}
-
 ssd1306 =  {workspace = true, features = ["async", "embedded-graphics-core"] }

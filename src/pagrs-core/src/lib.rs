@@ -24,4 +24,4 @@ pub trait Page<D: DrawTarget<Color = BinaryColor, Error = DisplayError>> {
     }
 }
 
-pub use rotation::PageRotator;
+pub use rotation::{PageRotator, PageController};

@@ -18,8 +18,8 @@ edition = "2021"
 license = "MIT"
 
 [workspace.dependencies]
-embassy-executor = { version = "0.6.1", features = ["task-arena-size-98304", "arch-cortex-m", "defmt", "executor-thread", "executor-interrupt", "integrated-timers"] }
-embassy-time = { version = "0.3.2", features = ["defmt", "defmt-timestamp-uptime"] }
+embassy-executor = { version = "0.7.0", features = ["task-arena-size-98304", "arch-cortex-m", "defmt", "executor-thread", "executor-interrupt"] }
+embassy-time = { version = "0.4.0", features = ["defmt", "defmt-timestamp-uptime"] }
 embedded-graphics-core = { version = "0.4.0" }
 embedded-graphics = { version = "0.8.1" }
 display-interface = { version = "0.5.0" }
@@ -27,7 +27,6 @@ embedded-layout = { version = "0.4.1" }
 heapless = { version = "0.8" }
 tinybmp = { version = "0.6.0" }
 
-maybe-async-cfg = "0.2.4"
 ssd1306 = { version = "0.9.0", features = ["async", "embedded-graphics-core"] }
 
 # cargo build/run
