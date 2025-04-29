@@ -9,6 +9,40 @@ use heapless::String;
 use pagrs_core::Page;
 
 #[derive(Debug)]
+/// display a dynamically changing text on the page. maximum length and refresh rate are controlled
+/// by type parameters.
+/// 
+/// ## examples
+/// 
+/// ### simple, 32 character long, string
+/// ```rust
+/// # use std::str::FromStr;
+/// use embedded_graphics::mono_font::ascii::FONT_6X10;
+/// use pagrs_text::DynamicText;
+///
+///
+/// let mut dynamic_text = DynamicText::<_, 32, 1>::new(
+///         || {
+///             heapless::String::from_str("Some potentially changing value.").unwrap()
+///         },
+///         &FONT_6X10,
+///     );
+/// ```
+/// 
+/// ### dynamic string with 12 fps
+/// ```rust
+/// # use std::str::FromStr;
+/// # use embedded_graphics::mono_font::ascii::FONT_6X10;
+/// # use pagrs_text::DynamicText;
+/// 
+/// let mut dynamic_text = DynamicText::<_, 32, 12>::new(
+///         || {
+///             heapless::String::from_str("Some potentially changing value.").unwrap()
+///         },
+///         &FONT_6X10,
+///     );
+/// ```
+/// 
 pub struct DynamicText<'a, F, const LENGTH: usize = 64, const FRAMES_PER_SECOND: u8 = 24>
 where F: Fn() -> String<LENGTH> {
     query_text: F,

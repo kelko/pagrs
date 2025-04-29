@@ -11,6 +11,14 @@ use tinybmp::Bmp;
 use pagrs_core::Page;
 
 #[derive(Debug)]
+/// show a bmp image, moving from side to side across the display.
+/// The image must be provided as bytes in RGB 565 encoding.
+///
+/// # example
+/// ```rust
+/// use pagrs_screensaver::{Screensaver};
+/// let mut screensaver = Screensaver::new(include_bytes!("./rust.bmp"));
+/// ```
 pub struct Screensaver<'a> {
     bmp: Bmp<'a, Rgb565>,
     index: i32,

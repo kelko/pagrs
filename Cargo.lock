@@ -131,7 +131,6 @@ checksum = "8ec610d8f49840a5b376c69663b6369e71f4b34484b9b2eb29fb918d92516cb9"
 dependencies = [
  "bare-metal",
  "bitfield",
- "critical-section",
  "embedded-hal 0.2.7",
  "volatile-register",
 ]
@@ -945,21 +944,22 @@ version = "0.1.0"
 dependencies = [
  "display-interface",
  "embassy-executor",
+ "embassy-futures",
+ "embassy-sync",
  "embassy-time",
  "embedded-graphics",
  "embedded-graphics-core",
  "embedded-layout",
  "heapless",
  "ssd1306",
+ "static_cell",
 ]
 
 [[package]]
 name = "pagrs-demo-ssd1306"
 version = "0.1.0"
 dependencies = [
- "cortex-m",
  "cortex-m-rt",
- "defmt",
  "defmt-rtt",
  "embassy-executor",
  "embassy-rp",
@@ -968,6 +968,7 @@ dependencies = [
  "heapless",
  "pagrs",
  "panic-probe",
+ "rand",
  "ssd1306",
  "ufmt",
 ]
@@ -978,7 +979,6 @@ version = "0.1.0"
 dependencies = [
  "critical-section",
  "display-interface",
- "embedded-graphics",
  "embedded-graphics-core",
  "pagrs-core",
  "portable-atomic",

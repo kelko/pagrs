@@ -13,7 +13,6 @@ use pagrs_core::Page;
 
 pub const PIXEL_PER_GLYPH_HEIGHT: usize = 9;
 pub const PIXEL_PER_GLYPH_WIDTH: usize = 8;
-const WORKER_COUNT: usize = 16;
 
 static RANDOM: StaticCell<SmallRng> = StaticCell::new();
 
@@ -53,15 +52,14 @@ impl Worker {
 }
 
 #[derive(Debug)]
-pub struct DigitalRain<const COLUMNS: usize, const ROWS: usize> {
+pub struct DigitalRain<const COLUMNS: usize, const ROWS: usize, const WORKER_COUNT: usize> {
     columns: [[u8; ROWS]; COLUMNS],
     workers: [Worker; WORKER_COUNT],
     random: &'static mut SmallRng,
-    frame_counter: usize,
     columns_with_workers: u64
 }
 
-impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
+impl<const COLUMNS: usize, const ROWS: usize, const WORKER_COUNT: usize> DigitalRain<COLUMNS, ROWS, WORKER_COUNT> {
     pub fn new(seed: u64) -> Self {
         let random = RANDOM.init(SmallRng::seed_from_u64(seed));
 
@@ -69,7 +67,6 @@ impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
             columns: [[0; ROWS]; COLUMNS],
             workers: [Worker::empty(); WORKER_COUNT],
             random,
-            frame_counter: 0,
             columns_with_workers: 0
         }
     }
@@ -85,11 +82,10 @@ impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
             *worker = Worker::empty();
         }
 
-        self.frame_counter = 0;
         self.columns_with_workers = 0;
     }
 
-    fn update_state(&mut self, frame_rate: usize) {
+    fn update_state(&mut self) {
         let worker_count = self.random.random_range(2..WORKER_COUNT/2);
 
         for _ in 0..worker_count {
@@ -139,7 +135,6 @@ impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
             }
         }
 
-        self.frame_counter = (self.frame_counter + 1) % frame_rate;
     }
 
     fn render_state<D: DrawTarget<Color=BinaryColor, Error=DisplayError>>(&mut self, display: &mut D) -> Result<(), D::Error> {
@@ -198,7 +193,7 @@ impl<const COLUMNS: usize, const ROWS: usize> DigitalRain<COLUMNS, ROWS> {
     }
 }
 
-impl<const COLUMNS: usize, const ROWS: usize, D: DrawTarget<Color=BinaryColor, Error=DisplayError>> Page<D> for DigitalRain<COLUMNS, ROWS> {
+impl<const COLUMNS: usize, const ROWS: usize, const WORKER_COUNT: usize, D: DrawTarget<Color=BinaryColor, Error=DisplayError>> Page<D> for DigitalRain<COLUMNS, ROWS, WORKER_COUNT> {
     fn activated(&mut self) -> Result<(), DisplayError> {
         self.initialize();
 
@@ -206,10 +201,8 @@ impl<const COLUMNS: usize, const ROWS: usize, D: DrawTarget<Color=BinaryColor, E
     }
 
     fn render(&mut self, display: &mut D) -> Result<(), DisplayError> {
-        let frame_rate = <DigitalRain<COLUMNS, ROWS> as Page<D>>::frames_per_second(self);
-
         // adding & removing glyphs
-        self.update_state(frame_rate as usize);
+        self.update_state();
 
         // paint current state
         self.render_state(display)?;

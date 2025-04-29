@@ -5,6 +5,7 @@ authors.workspace = true
 description.workspace = true
 edition.workspace = true
 license.workspace = true
+publish = false
 
 [dependencies]
 pagrs = {path = "../pagrs", features = ["screensaver", "matrix"]}
@@ -16,8 +17,7 @@ ufmt = "0.2.0"
 
 ssd1306 =  {workspace = true, features = ["async", "embedded-graphics-core"] }
 embassy-rp = { version = "0.3.1", features = ["unstable-pac", "time-driver", "defmt", "critical-section-impl", "rp2040"] }
-defmt = "0.3"
 defmt-rtt = "0.4"
 panic-probe = { version = "0.3", features = ["print-defmt"] }
-cortex-m = { version = "0.7.7", features = ["inline-asm", "critical-section",] }
 cortex-m-rt = "0.7.5"
+rand = { version = "0.9.0", features = ["small_rng"], default-features = false }

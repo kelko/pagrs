@@ -10,7 +10,6 @@ license.workspace = true
 pagrs-core = { path = "../pagrs-core" }
 display-interface =  {workspace = true }
 embedded-graphics-core =  {workspace = true }
-embedded-graphics =  {workspace = true }
 
 critical-section = "1.2.0"
 portable-atomic = { version = "1.10.0", features = ["critical-section"] }

@@ -25,6 +25,9 @@ static BRACKET_POINTS_RIGHT: [Point; 4] = [
     Point::new(0, 15),
 ];
 
+/// shows an icon for `pagrs`,
+/// used as short splashscreen by the [PageRotator](crate::PageRotator) before starting to
+/// rotate the actual [Pages](crate::Page)
 pub(crate) struct SplashScreen<'a, DI, SIZE, MODE> {
     display: &'a mut Ssd1306Async<DI, SIZE, MODE>,
 }

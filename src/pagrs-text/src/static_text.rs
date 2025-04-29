@@ -8,6 +8,13 @@ use embedded_graphics_core::pixelcolor::BinaryColor;
 use pagrs_core::Page;
 
 #[derive(Debug)]
+///
+/// ```rust
+/// use embedded_graphics::mono_font::ascii::FONT_6X10;
+/// use pagrs_text::StaticText;
+/// 
+/// let mut text = StaticText::new("Hello, World!", &FONT_6X10);
+/// ```
 pub struct StaticText<'a> {
     text: Text<'a, MonoTextStyle<'a, BinaryColor>>,
 }

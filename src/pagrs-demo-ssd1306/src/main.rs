@@ -9,6 +9,8 @@ use embassy_time::{Duration, Timer};
 use embedded_graphics::mono_font::ascii::FONT_6X10;
 use embedded_graphics::pixelcolor::Rgb565;
 use heapless::String;
+use rand::prelude::SmallRng;
+use rand::{Rng, SeedableRng};
 use ssd1306::prelude::*;
 use ssd1306::{I2CDisplayInterface, Ssd1306Async};
 use ufmt::uwrite;
@@ -44,10 +46,19 @@ async fn main(spawner: Spawner) {
     let controller = PageController::new();
 
     Timer::after(Duration::from_secs(8)).await;
-    controller.previous();
+    controller.previous().await;
 
+    let mut random = SmallRng::seed_from_u64(0);
     loop {
-        Timer::after(Duration::from_secs(1)).await;
+        let delay = random.random_range(5..20);
+        Timer::after(Duration::from_secs(delay)).await;
+
+        let to_previous = random.random_bool(0.5);
+        if to_previous {
+            controller.previous().await;
+        } else {
+            controller.next().await;
+        }
     }
 }
 
@@ -94,7 +105,7 @@ async fn rotate(sda: embassy_rp::peripherals::PIN_6, scl: embassy_rp::peripheral
         HorizontalAlignment::Right,
         VerticalAlignment::Bottom,
     );
-    let mut matrix_rain = DigitalRain::<16, 7>::new(0xDA7A);
+    let mut matrix_rain = DigitalRain::<16, 7, 16>::new(0xDA7A);
 
     // create pagr object
     let mut pagr = PageRotator::<5, _, _, _>::new(display);
